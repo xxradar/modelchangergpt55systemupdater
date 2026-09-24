@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-MODULE_PATH = Path('/home/runner/work/modelchangergpt55systemupdater/modelchangergpt55systemupdater/oa-01.py')
+MODULE_PATH = Path(__file__).resolve().parent.parent / 'oa-01.py'
 SPEC = importlib.util.spec_from_file_location('oa_01', MODULE_PATH)
 oa_01 = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(oa_01)

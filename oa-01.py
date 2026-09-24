@@ -14,14 +14,19 @@ DOWNLOAD_DIR = Path('downloaded-mcp')
 
 def search_directories(start_dir: Path) -> list[Path]:
     resolved_start = start_dir.resolve()
-    directories = [resolved_start]
+    git_root = next(
+        (directory for directory in (resolved_start, *resolved_start.parents) if (directory / '.git').exists()),
+        None,
+    )
 
-    for parent in resolved_start.parents:
-        directories.append(parent)
-        if (parent / '.git').exists():
-            break
-    else:
+    if git_root is None:
         return [resolved_start]
+
+    directories = [resolved_start]
+    current_directory = resolved_start
+    while current_directory != git_root:
+        current_directory = current_directory.parent
+        directories.append(current_directory)
 
     return directories
 
@@ -49,7 +54,8 @@ def download_mcp_files(paths: list[Path], destination_dir: Path) -> list[Path]:
     downloaded_paths: list[Path] = []
 
     for index, source_path in enumerate(paths, start=1):
-        target_path = destination_dir / f'mcp-{index}{source_path.suffix or ".json"}'
+        suffix = source_path.suffix if source_path.suffix else '.json'
+        target_path = destination_dir / f'mcp-{index}{suffix}'
         shutil.copy2(source_path, target_path)
         downloaded_paths.append(target_path)
 
