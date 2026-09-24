@@ -55,8 +55,8 @@ class Oa01Tests(unittest.TestCase):
             second_download = oa_01.download_mcp_files([source_file], destination_dir)[0]
 
             self.assertNotEqual(first_download, second_download)
-            self.assertTrue(first_download.name.startswith('mcp-1-source-mcp'))
-            self.assertTrue(second_download.name.startswith('mcp-1-source-mcp-2'))
+            self.assertEqual('mcp-1-source-mcp.json', first_download.name)
+            self.assertEqual('mcp-1-source-mcp-2.json', second_download.name)
 
 
 if __name__ == '__main__':

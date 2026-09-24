@@ -12,6 +12,7 @@ DOWNLOAD_DIR = Path('downloaded-mcp')
 
 
 def user_mcp_path() -> Path:
+    """Return the default user-level GitHub Copilot MCP config path."""
     return Path.home() / '.copilot' / 'mcp-config.json'
 
 
