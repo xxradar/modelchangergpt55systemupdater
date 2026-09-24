@@ -23,7 +23,7 @@ class Oa01Tests(unittest.TestCase):
             self.assertIn(repo_root / '.github/mcp.json', candidates)
             self.assertIn(start_dir / '.mcp.json', candidates)
             self.assertIn(start_dir / '.vscode/mcp.json', candidates)
-            self.assertIn(oa_01.USER_MCP_PATH, candidates)
+            self.assertIn(oa_01.user_mcp_path(), candidates)
             self.assertNotIn(Path(tmp) / '.github/mcp.json', candidates)
 
     def test_describe_locations_downloads_found_configs(self):

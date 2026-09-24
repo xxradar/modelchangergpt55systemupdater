@@ -8,8 +8,11 @@ WORKSPACE_MCP_PATHS = (
     Path('.mcp.json'),
     Path('.vscode/mcp.json'),
 )
-USER_MCP_PATH = Path.home() / '.copilot' / 'mcp-config.json'
 DOWNLOAD_DIR = Path('downloaded-mcp')
+
+
+def user_mcp_path() -> Path:
+    return Path.home() / '.copilot' / 'mcp-config.json'
 
 
 def search_directories(start_dir: Path) -> list[Path]:
@@ -39,7 +42,7 @@ def candidate_mcp_paths(start_dir: Path) -> list[Path]:
         for relative_path in WORKSPACE_MCP_PATHS:
             candidates.setdefault(directory / relative_path, None)
 
-    candidates.setdefault(USER_MCP_PATH, None)
+    candidates.setdefault(user_mcp_path(), None)
     return list(candidates)
 
 
@@ -55,12 +58,12 @@ def build_download_name(source_path: Path, index: int) -> str:
 
 
 def next_available_path(destination_dir: Path, file_name: str) -> Path:
-    file_path = Path(file_name)
+    base_path = Path(file_name)
     candidate = destination_dir / file_name
     counter = 2
 
     while candidate.exists():
-        candidate = destination_dir / f'{file_path.stem}-{counter}{file_path.suffix}'
+        candidate = destination_dir / f'{base_path.stem}-{counter}{base_path.suffix}'
         counter += 1
 
     return candidate
