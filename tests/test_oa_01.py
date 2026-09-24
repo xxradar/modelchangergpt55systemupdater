@@ -58,6 +58,18 @@ class Oa01Tests(unittest.TestCase):
             self.assertEqual('source-mcp.json', first_download.name)
             self.assertEqual('source-mcp-2.json', second_download.name)
 
+    def test_describe_locations_ignores_existing_downloaded_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            downloaded_dir = Path(tmp) / oa_01.DOWNLOAD_DIR
+            downloaded_dir.mkdir(parents=True)
+            downloaded_file = downloaded_dir / '.mcp.json'
+            downloaded_file.write_text('{"cached": true}', encoding='utf-8')
+
+            description = oa_01.describe_locations(downloaded_dir)
+
+            self.assertIn('No mcp.json-style configuration files were found to download.', description)
+            self.assertEqual('{"cached": true}', downloaded_file.read_text(encoding='utf-8'))
+
 
 if __name__ == '__main__':
     unittest.main()

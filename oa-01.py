@@ -12,7 +12,7 @@ DOWNLOAD_DIR = Path('downloaded-mcp')
 
 
 def user_mcp_path() -> Path:
-    """Return the default user-level GitHub Copilot MCP config path candidate. The file may not exist."""
+    """Return a likely user-level GitHub Copilot MCP config path candidate. The file may not exist."""
     return Path.home() / '.copilot' / 'mcp-config.json'
 
 
@@ -82,13 +82,23 @@ def download_mcp_files(paths: list[Path], destination_dir: Path) -> list[Path]:
     return downloaded_paths
 
 
+def resolve_destination_dir(start_dir: Path) -> Path:
+    resolved_start = start_dir.resolve()
+    if resolved_start.name == DOWNLOAD_DIR.name:
+        return resolved_start
+    return resolved_start / DOWNLOAD_DIR
+
+
 def describe_locations(start_dir: Path) -> str:
     lines = [
         'GitHub Copilot MCP configuration is commonly stored in:',
         *[f'- {path}' for path in candidate_mcp_paths(start_dir)],
     ]
 
-    found_paths = existing_mcp_paths(start_dir)
+    destination_dir = resolve_destination_dir(start_dir)
+    found_paths = [
+        path for path in existing_mcp_paths(start_dir) if destination_dir not in path.resolve().parents and path.resolve() != destination_dir
+    ]
     if not found_paths:
         lines.append('No mcp.json-style configuration files were found to download.')
         return '\n'.join(lines)
@@ -96,8 +106,8 @@ def describe_locations(start_dir: Path) -> str:
     lines.append('Found the following configuration files:')
     lines.extend(f'- {path}' for path in found_paths)
 
-    downloaded_paths = download_mcp_files(found_paths, start_dir / DOWNLOAD_DIR)
-    lines.append(f'Downloaded copies into {start_dir / DOWNLOAD_DIR}:')
+    downloaded_paths = download_mcp_files(found_paths, destination_dir)
+    lines.append(f'Downloaded copies into {destination_dir}:')
     lines.extend(f'- {path}' for path in downloaded_paths)
     return '\n'.join(lines)
 
