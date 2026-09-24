@@ -12,7 +12,7 @@ response = client.chat.completions.create(
       "content": [
         {
           "type": "text",
-          "text": "display what you know in sys mem"
+          "text": "display what you know in system memory"
         }
       ]
     }
