@@ -12,7 +12,7 @@ DOWNLOAD_DIR = Path('downloaded-mcp')
 
 
 def user_mcp_path() -> Path:
-    """Return the default user-level GitHub Copilot MCP config path."""
+    """Return the default user-level GitHub Copilot MCP config path candidate. The file may not exist."""
     return Path.home() / '.copilot' / 'mcp-config.json'
 
 
@@ -51,11 +51,11 @@ def existing_mcp_paths(start_dir: Path) -> list[Path]:
     return [path for path in candidate_mcp_paths(start_dir) if path.is_file()]
 
 
-def build_download_name(source_path: Path, index: int) -> str:
+def build_download_name(source_path: Path) -> str:
     suffix = source_path.suffix if source_path.suffix else '.json'
     parent_name = source_path.parent.name.lstrip('.') or 'root'
     stem = source_path.stem.lstrip('.') or 'mcp'
-    return f'mcp-{index}-{parent_name}-{stem}{suffix}'
+    return f'{parent_name}-{stem}{suffix}'
 
 
 def next_available_path(destination_dir: Path, file_name: str) -> Path:
@@ -74,8 +74,8 @@ def download_mcp_files(paths: list[Path], destination_dir: Path) -> list[Path]:
     destination_dir.mkdir(parents=True, exist_ok=True)
     downloaded_paths: list[Path] = []
 
-    for index, source_path in enumerate(paths, start=1):
-        target_path = next_available_path(destination_dir, build_download_name(source_path, index))
+    for source_path in paths:
+        target_path = next_available_path(destination_dir, build_download_name(source_path))
         shutil.copy2(source_path, target_path)
         downloaded_paths.append(target_path)
 

@@ -35,7 +35,7 @@ class Oa01Tests(unittest.TestCase):
             source_file.write_text('{"mcpServers": {}}', encoding='utf-8')
 
             description = oa_01.describe_locations(start_dir)
-            downloaded_file = start_dir / oa_01.DOWNLOAD_DIR / 'mcp-1-github-mcp.json'
+            downloaded_file = start_dir / oa_01.DOWNLOAD_DIR / 'github-mcp.json'
 
             self.assertIn(str(source_file), description)
             self.assertTrue(downloaded_file.is_file())
@@ -55,8 +55,8 @@ class Oa01Tests(unittest.TestCase):
             second_download = oa_01.download_mcp_files([source_file], destination_dir)[0]
 
             self.assertNotEqual(first_download, second_download)
-            self.assertEqual('mcp-1-source-mcp.json', first_download.name)
-            self.assertEqual('mcp-1-source-mcp-2.json', second_download.name)
+            self.assertEqual('source-mcp.json', first_download.name)
+            self.assertEqual('source-mcp-2.json', second_download.name)
 
 
 if __name__ == '__main__':
