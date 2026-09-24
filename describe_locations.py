@@ -13,13 +13,16 @@ HOME_MCP_LOCATIONS = [
 ]
 
 
-def describe_locations(base: Path) -> str:
-    lines = []
-
-    # Collect candidate paths
+def collect_candidates(base: Path) -> list:
     candidates = [base / rel for rel in MCP_LOCATIONS]
     home = Path.home()
     candidates += [home / rel for rel in HOME_MCP_LOCATIONS]
+    return candidates
+
+
+def describe_locations(base: Path) -> str:
+    lines = []
+    candidates = collect_candidates(base)
 
     lines.append("Checking the following locations:")
     for p in candidates:
@@ -38,14 +41,13 @@ def describe_locations(base: Path) -> str:
 
 
 def create_zip(base: Path, zip_path: Path) -> list:
-    candidates = [base / rel for rel in MCP_LOCATIONS]
-    home = Path.home()
-    candidates += [home / rel for rel in HOME_MCP_LOCATIONS]
-
+    candidates = collect_candidates(base)
     found = [p for p in candidates if p.exists()]
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for p in found:
-            zf.write(p, p.name)
+            # Use a unique archive name derived from the full path to avoid collisions
+            archive_name = str(p).lstrip("/").replace("/", "_")
+            zf.write(p, archive_name)
     return found
 
 

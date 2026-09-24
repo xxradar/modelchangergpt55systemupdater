@@ -2,9 +2,6 @@ name: Debug - Create artifact of configuration files
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "**"
 
 jobs:
   describe-and-zip:
