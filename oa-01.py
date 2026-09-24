@@ -5,7 +5,7 @@ client = OpenAI()
 
 # Call the create method of the chat.completions object to get a model response
 response = client.chat.completions.create(
-  model="gpt-4o",
+  model="gpt-5.4",
   messages=[
     {
       "role": "user",
