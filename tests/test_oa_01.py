@@ -35,11 +35,23 @@ class Oa01Tests(unittest.TestCase):
             source_file.write_text('{"mcpServers": {}}', encoding='utf-8')
 
             description = oa_01.describe_locations(start_dir)
-            downloaded_file = start_dir / oa_01.DOWNLOAD_DIR / 'mcp-1.json'
+            downloaded_file = start_dir / oa_01.DOWNLOAD_DIR / 'mcp-1-github-mcp.json'
 
             self.assertIn(str(source_file), description)
             self.assertTrue(downloaded_file.is_file())
             self.assertEqual(source_file.read_text(encoding='utf-8'), downloaded_file.read_text(encoding='utf-8'))
+
+    def test_downloads_do_not_overwrite_existing_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            destination_dir = Path(tmp)
+            source_file = destination_dir / 'mcp.json'
+            source_file.write_text('{"first": true}', encoding='utf-8')
+
+            first_download, second_download = oa_01.download_mcp_files([source_file, source_file], destination_dir)
+
+            self.assertNotEqual(first_download, second_download)
+            self.assertTrue(first_download.name.startswith('mcp-1-'))
+            self.assertTrue(second_download.name.startswith('mcp-2-'))
 
 
 if __name__ == '__main__':

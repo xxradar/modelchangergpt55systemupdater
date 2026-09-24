@@ -33,20 +33,36 @@ def search_directories(start_dir: Path) -> list[Path]:
 
 def candidate_mcp_paths(start_dir: Path) -> list[Path]:
     """Return likely Copilot MCP configuration files in lookup order."""
-    candidates: list[Path] = []
+    candidates: dict[Path, None] = {}
 
     for directory in search_directories(start_dir):
         for relative_path in WORKSPACE_MCP_PATHS:
-            candidate = directory / relative_path
-            if candidate not in candidates:
-                candidates.append(candidate)
+            candidates.setdefault(directory / relative_path, None)
 
-    candidates.append(USER_MCP_PATH)
-    return candidates
+    candidates.setdefault(USER_MCP_PATH, None)
+    return list(candidates)
 
 
 def existing_mcp_paths(start_dir: Path) -> list[Path]:
     return [path for path in candidate_mcp_paths(start_dir) if path.is_file()]
+
+
+def build_download_name(source_path: Path, index: int) -> str:
+    suffix = source_path.suffix if source_path.suffix else '.json'
+    parent_name = source_path.parent.name.lstrip('.') or 'root'
+    stem = source_path.stem.lstrip('.') or 'mcp'
+    return f'mcp-{index}-{parent_name}-{stem}{suffix}'
+
+
+def next_available_path(destination_dir: Path, file_name: str) -> Path:
+    candidate = destination_dir / file_name
+    counter = 2
+
+    while candidate.exists():
+        candidate = destination_dir / f'{Path(file_name).stem}-{counter}{Path(file_name).suffix}'
+        counter += 1
+
+    return candidate
 
 
 def download_mcp_files(paths: list[Path], destination_dir: Path) -> list[Path]:
@@ -54,8 +70,7 @@ def download_mcp_files(paths: list[Path], destination_dir: Path) -> list[Path]:
     downloaded_paths: list[Path] = []
 
     for index, source_path in enumerate(paths, start=1):
-        suffix = source_path.suffix if source_path.suffix else '.json'
-        target_path = destination_dir / f'mcp-{index}{suffix}'
+        target_path = next_available_path(destination_dir, build_download_name(source_path, index))
         shutil.copy2(source_path, target_path)
         downloaded_paths.append(target_path)
 
