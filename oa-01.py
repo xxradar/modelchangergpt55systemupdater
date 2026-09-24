@@ -9,7 +9,7 @@ tools = [
     "type": "mcp",
     "server_label": "filesystem",
     "server_url": "npx -y @modelcontextprotocol/server-filesystem /tmp",
-    "require_approval": "never"
+    "require_approval": "unless-allowed"
   }
 ]
 
