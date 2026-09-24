@@ -55,11 +55,12 @@ def build_download_name(source_path: Path, index: int) -> str:
 
 
 def next_available_path(destination_dir: Path, file_name: str) -> Path:
+    file_path = Path(file_name)
     candidate = destination_dir / file_name
     counter = 2
 
     while candidate.exists():
-        candidate = destination_dir / f'{Path(file_name).stem}-{counter}{Path(file_name).suffix}'
+        candidate = destination_dir / f'{file_path.stem}-{counter}{file_path.suffix}'
         counter += 1
 
     return candidate
