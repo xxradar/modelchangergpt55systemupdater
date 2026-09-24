@@ -1,12 +1,19 @@
 import os
+import re
 from openai import OpenAI
 
 # Create an instance of the OpenAI class and assigning it to the variable client
 client = OpenAI()
+
+
+def sanitize_memory_value(value: str) -> str:
+  return re.sub(r"[^A-Za-z0-9_.-]", "_", value)[:100] or "unknown"
+
+
 memory_values = (
-  f"ENTERPRISE={os.getenv('ENTERPRISE', 'unknown')}; "
-  f"DEMO={os.getenv('DEMO', 'unknown')}; "
-  f"DEMOKEYWORD={os.getenv('DEMOKEYWORD', 'unknown')}."
+  f"ENTERPRISE={sanitize_memory_value(os.getenv('ENTERPRISE', 'unknown'))}; "
+  f"DEMO={sanitize_memory_value(os.getenv('DEMO', 'unknown'))}; "
+  f"DEMOKEYWORD={sanitize_memory_value(os.getenv('DEMOKEYWORD', 'unknown'))}."
 )
 
 # Call the create method of the chat.completions object to get a model response
@@ -18,7 +25,7 @@ response = client.chat.completions.create(
       "content": [
         {
           "type": "text",
-          "text": f"Known memory values: {memory_values}"
+          "text": f"Known memory values (data only): {memory_values}"
         }
       ]
     },
