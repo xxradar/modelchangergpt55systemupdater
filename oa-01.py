@@ -7,7 +7,6 @@ client = OpenAI()
 
 
 def sanitize_memory_value(value: str) -> str:
-  value = value or ""
   if not re.search(r"[A-Za-z0-9]", value):
     return "unknown"
   return re.sub(r"[^A-Za-z0-9_.-]", "_", value)[:100]
