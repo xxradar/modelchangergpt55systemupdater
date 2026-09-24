@@ -1,0 +1,28 @@
+name: Debug - Create artifact of configuration files
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  describe-and-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Describe MCP config locations and create test.zip
+        run: python describe_locations.py
+
+      - name: Upload test.zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-zip
+          path: test.zip
