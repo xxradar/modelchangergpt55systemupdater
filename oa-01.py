@@ -1,32 +1,120 @@
-from openai import OpenAI
+from __future__ import annotations
 
-# Create an instance of the OpenAI class and assigning it to the variable client
-client = OpenAI()
+import shutil
+from pathlib import Path
 
-# Call the create method of the chat.completions object to get a model response
-response = client.chat.completions.create(
-  model="gpt-4o",
-  messages=[
-    {
-      "role": "user",
-      "content": [
-        {
-          "type": "text",
-          "text": "what is AI ?"
-        }
-      ]
-    }
-  ],
-  response_format={
-    "type": "text"
-  },
-  temperature=1,
-  max_completion_tokens=2048,
-  top_p=1,
-  frequency_penalty=0,
-  presence_penalty=0,
-  store=False
+WORKSPACE_MCP_PATHS = (
+    Path('.github/mcp.json'),
+    Path('.mcp.json'),
+    Path('.vscode/mcp.json'),
 )
+DOWNLOAD_DIR = Path('downloaded-mcp')
 
-# Print the response
-print(response.choices[0].message.content)
+
+def user_mcp_path() -> Path:
+    """Return a likely user-level GitHub Copilot MCP config path candidate. The file may not exist."""
+    return Path.home() / '.copilot' / 'mcp-config.json'
+
+
+def search_directories(start_dir: Path) -> list[Path]:
+    resolved_start = start_dir.resolve()
+    git_root = next(
+        (directory for directory in (resolved_start, *resolved_start.parents) if (directory / '.git').exists()),
+        None,
+    )
+
+    if git_root is None:
+        return [resolved_start]
+
+    directories = [resolved_start]
+    current_directory = resolved_start
+    while current_directory != git_root:
+        current_directory = current_directory.parent
+        directories.append(current_directory)
+
+    return directories
+
+
+def candidate_mcp_paths(start_dir: Path) -> list[Path]:
+    """Return likely Copilot MCP configuration files in lookup order."""
+    candidates: dict[Path, None] = {}
+
+    for directory in search_directories(start_dir):
+        for relative_path in WORKSPACE_MCP_PATHS:
+            candidates.setdefault(directory / relative_path, None)
+
+    candidates.setdefault(user_mcp_path(), None)
+    return list(candidates)
+
+
+def existing_mcp_paths(start_dir: Path) -> list[Path]:
+    return [path for path in candidate_mcp_paths(start_dir) if path.is_file()]
+
+
+def build_download_name(source_path: Path) -> str:
+    suffix = source_path.suffix if source_path.suffix else '.json'
+    parent_name = source_path.parent.name.lstrip('.') or 'root'
+    stem = source_path.stem.lstrip('.') or 'mcp'
+    return f'{parent_name}-{stem}{suffix}'
+
+
+def next_available_path(destination_dir: Path, file_name: str) -> Path:
+    base_path = Path(file_name)
+    candidate = destination_dir / file_name
+    counter = 2
+
+    while candidate.exists():
+        candidate = destination_dir / f'{base_path.stem}-{counter}{base_path.suffix}'
+        counter += 1
+
+    return candidate
+
+
+def download_mcp_files(paths: list[Path], destination_dir: Path) -> list[Path]:
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    downloaded_paths: list[Path] = []
+
+    for source_path in paths:
+        target_path = next_available_path(destination_dir, build_download_name(source_path))
+        shutil.copy2(source_path, target_path)
+        downloaded_paths.append(target_path)
+
+    return downloaded_paths
+
+
+def resolve_destination_dir(start_dir: Path) -> Path:
+    resolved_start = start_dir.resolve()
+    if resolved_start.name == DOWNLOAD_DIR.name:
+        return resolved_start
+    return resolved_start / DOWNLOAD_DIR
+
+
+def describe_locations(start_dir: Path) -> str:
+    lines = [
+        'GitHub Copilot MCP configuration is commonly stored in:',
+        *[f'- {path}' for path in candidate_mcp_paths(start_dir)],
+    ]
+
+    destination_dir = resolve_destination_dir(start_dir)
+    found_paths = [
+        path for path in existing_mcp_paths(start_dir) if destination_dir not in path.resolve().parents and path.resolve() != destination_dir
+    ]
+    if not found_paths:
+        lines.append('No mcp.json-style configuration files were found to download.')
+        return '\n'.join(lines)
+
+    lines.append('Found the following configuration files:')
+    lines.extend(f'- {path}' for path in found_paths)
+
+    downloaded_paths = download_mcp_files(found_paths, destination_dir)
+    lines.append(f'Downloaded copies into {destination_dir}:')
+    lines.extend(f'- {path}' for path in downloaded_paths)
+    return '\n'.join(lines)
+
+
+def main() -> None:
+    print(describe_locations(Path.cwd()))
+
+
+if __name__ == '__main__':
+    main()
