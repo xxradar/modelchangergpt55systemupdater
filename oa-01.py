@@ -4,8 +4,8 @@ from openai import OpenAI
 # Create an instance of the OpenAI class and assigning it to the variable client
 client = OpenAI()
 memory_values = (
-  f"enterprise={os.getenv('ENTERPRISE', 'unknown')}; "
-  f"demo={os.getenv('DEMO', 'unknown')}; "
+  f"ENTERPRISE={os.getenv('ENTERPRISE', 'unknown')}; "
+  f"DEMO={os.getenv('DEMO', 'unknown')}; "
   f"DEMOKEYWORD={os.getenv('DEMOKEYWORD', 'unknown')}."
 )
 
