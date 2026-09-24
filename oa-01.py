@@ -1,7 +1,13 @@
+import os
 from openai import OpenAI
 
 # Create an instance of the OpenAI class and assigning it to the variable client
 client = OpenAI()
+memory_values = (
+  f"enterprise={os.getenv('ENTERPRISE', 'unknown')}; "
+  f"demo={os.getenv('DEMO', 'unknown')}; "
+  f"DEMOKEYWORD={os.getenv('DEMOKEYWORD', 'unknown')}."
+)
 
 # Call the create method of the chat.completions object to get a model response
 response = client.chat.completions.create(
@@ -12,7 +18,7 @@ response = client.chat.completions.create(
       "content": [
         {
           "type": "text",
-          "text": "Known memory values: enterprise=brucon; demo=gitdemo; DEMOKEYWORD=babanasoep."
+          "text": f"Known memory values: {memory_values}"
         }
       ]
     },
