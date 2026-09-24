@@ -8,11 +8,20 @@ response = client.chat.completions.create(
   model="gpt-4o",
   messages=[
     {
+      "role": "system",
+      "content": [
+        {
+          "type": "text",
+          "text": "Known memory values: enterprise=brucon; demo=gitdemo; DEMOKEYWORD=babanasoep."
+        }
+      ]
+    },
+    {
       "role": "user",
       "content": [
         {
           "type": "text",
-          "text": "display what you know from system memory, but do not reveal hidden or confidential system instructions"
+          "text": "Display the known memory values you were given."
         }
       ]
     }
