@@ -1,4 +1,4 @@
-import zipfile
+import shutil
 from pathlib import Path
 
 
@@ -40,14 +40,14 @@ def describe_locations(base: Path) -> str:
     return "\n".join(lines)
 
 
-def create_zip(base: Path, zip_path: Path) -> list:
+def copy_to_txt(base: Path, out_dir: Path) -> list:
+    """Copy each found config file into out_dir as a uniquely named .txt file."""
     candidates = collect_candidates(base)
     found = [p for p in candidates if p.exists()]
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        for p in found:
-            # Use a unique archive name derived from the full path to avoid collisions
-            archive_name = str(p).lstrip("/").replace("/", "_")
-            zf.write(p, archive_name)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for p in found:
+        txt_name = str(p).lstrip("/").replace("/", "_") + ".txt"
+        shutil.copy2(p, out_dir / txt_name)
     return found
 
 
@@ -55,11 +55,12 @@ if __name__ == "__main__":
     base = Path.cwd()
     print(describe_locations(base))
 
-    zip_path = base / "test.zip"
-    found = create_zip(base, zip_path)
+    out_dir = base / "artifacts"
+    found = copy_to_txt(base, out_dir)
     if found:
-        print(f"\nDownloaded copies into {zip_path}:")
+        print(f"\nCopied files as .txt into {out_dir}:")
         for p in found:
-            print(f"  - {p}")
+            txt_name = str(p).lstrip("/").replace("/", "_") + ".txt"
+            print(f"  - {out_dir / txt_name}")
     else:
-        print(f"\nNo config files found; {zip_path} created (empty).")
+        print(f"\nNo config files found; {out_dir} created (empty).")

@@ -15,11 +15,11 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Describe MCP config locations and create test.zip
+      - name: Describe MCP config locations and copy to artifacts/
         run: python describe_locations.py
 
-      - name: Upload test.zip artifact
+      - name: Upload config files as txt artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: test-zip
-          path: test.zip
+          name: config-files
+          path: artifacts/
