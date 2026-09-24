@@ -53,14 +53,20 @@ def copy_to_txt(base: Path, out_dir: Path) -> list:
 
 if __name__ == "__main__":
     base = Path.cwd()
-    print(describe_locations(base))
+    description = describe_locations(base)
+    print(description)
 
     out_dir = base / "artifacts"
     found = copy_to_txt(base, out_dir)
+
+    # Always write a summary so the artifacts folder is never empty
+    summary_path = out_dir / "describe_locations.txt"
+    summary_path.write_text(description + "\n")
+
     if found:
         print(f"\nCopied files as .txt into {out_dir}:")
         for p in found:
             txt_name = str(p).lstrip("/").replace("/", "_") + ".txt"
             print(f"  - {out_dir / txt_name}")
     else:
-        print(f"\nNo config files found; {out_dir} created (empty).")
+        print(f"\nNo config files found; summary written to {summary_path}.")
