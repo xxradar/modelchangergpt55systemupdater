@@ -11,7 +11,6 @@ SAFE_PROMPT = (
 
 DOCKER_DEBUG_KEYWORDS = (
     "docker",
-    "docker.sock",
     "--privileged",
     "--net=host",
     "kill ",
